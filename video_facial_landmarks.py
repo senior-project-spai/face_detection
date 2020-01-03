@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
         # det == -1 means not found face in picture
         if det != -1:
-            # no_face_count = 0
+            no_face_count = 0
             font = cv2.FONT_HERSHEY_DUPLEX
             text_showed = "{} {:0.2f} {:0.2f}".format(idx, score, size)
             print("Left: {} Top: {} Right: {} Bottom: {} IDX:{} Score:{} Size:{}".format(
