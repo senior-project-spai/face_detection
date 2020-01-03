@@ -55,6 +55,8 @@ if __name__ == "__main__":
     vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
     time.sleep(2.0)
 
+    no_face_count = 0
+
     # loop frame by frame from video stream
     while True:
         # grab the frame from the threaded video stream,
@@ -73,6 +75,7 @@ if __name__ == "__main__":
 
         # det == -1 means not found face in picture
         if det != -1:
+            # no_face_count = 0
             font = cv2.FONT_HERSHEY_DUPLEX
             text_showed = "{} {:0.2f} {:0.2f}".format(idx, score, size)
             print("Left: {} Top: {} Right: {} Bottom: {} IDX:{} Score:{} Size:{}".format(
@@ -82,9 +85,14 @@ if __name__ == "__main__":
             cv2.putText(frame, text_showed, (det.left() + 6, det.bottom() - 6),
                         font, 0.5, (255, 255, 255), 1)
         else:
-            print("Face Not Found")
-            # TODO: Create function to tell that its new client coming to store
+            no_face_count = no_face_count+1
+            print("Face Not Found Count={}".format(no_face_count))
 
+        # this if scope is to call api that next frame should be new customer
+        if no_face_count == 15:
+            # TODO: Create function to tell that its new client coming to store
+            print('New Client')
+        
         # show the frame
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
