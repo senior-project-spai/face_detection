@@ -47,11 +47,11 @@ if __name__ == "__main__":
 
     # initialize dlib's face detector (HOG-based) and
     # using default detector from dlib
-    print("[INFO] loading facial landmark predictor...")
+    print("[INFO] major face detector...")
     detector = dlib.get_frontal_face_detector()
 
     # initialize the video stream and allow the camera sensor to warm up
-    print("[INFO] camera sensor warming up...")
+    print("[INFO] camera sensor is warming up...")
     vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
     time.sleep(2.0)
 
