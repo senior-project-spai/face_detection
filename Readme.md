@@ -8,7 +8,7 @@ pip3 install imutils opencv-python opencv-contrib-python==4.1.0.25
 ```
 ### Run with pi camera
 ```
-python face_detector.py --picamera 1
+python3 face_detector.py --picamera 1
 ```
 ## Run without Raspberry Pi
 ```
