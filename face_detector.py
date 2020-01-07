@@ -23,6 +23,15 @@ class Itrigger_detection(BaseModel):
     tax: float = None
 
 
+class Idetection_response(BaseModel):
+    confidence: float
+    buttom: float
+    right: float
+    top: float
+    left: float
+    size: float
+
+
 def get_width_frame(frame):
     (_, w) = frame.shape[:2]
     return w
@@ -52,7 +61,7 @@ def get_biggest_face(dets, scores, idx):
     return biggest_det_det, biggest_det_score, biggest_det_idx, biggest_det_size
 
 
-@app.post("/detection")
+@app.post("/detection", response_model=Idetection_response)
 async def trigger_detection(item: Itrigger_detection):
     # construct the argument parse and parse the arguments
 
@@ -158,4 +167,11 @@ async def trigger_detection(item: Itrigger_detection):
     # cv2.destroyAllWindows()
     vs.stop()
     time.sleep(2)
-    return {'done': True}
+    return {
+        "confidence": max_confidence,
+        "buttom": best_frame_buttom,
+        "right": best_frame_right,
+        "top": best_frame_top,
+        "left": best_frame_left,
+        "size": best_frame_size,
+    }
