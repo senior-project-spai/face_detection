@@ -63,7 +63,7 @@ async def trigger_detection(item: Itrigger_detection):
 
     # initialize dlib's face detector (HOG-based) and
     # using default detector from dlib
-    print("[INFO] loading facial landmark predictor...")
+    print("[INFO] major face detector...")
     detector = dlib.get_frontal_face_detector()
 
     # initialize the video stream and allow the camera sensor to warm up
