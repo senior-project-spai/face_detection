@@ -19,8 +19,6 @@ app = FastAPI()
 class Itrigger_detection(BaseModel):
     customerId: str = None
     transactionId: str = None
-    # price: float = None
-    # tax: float = None
 
 
 class Idetection_response(BaseModel):
@@ -65,13 +63,6 @@ def get_biggest_face(dets, scores, idx):
 
 @app.post("/detection", response_model=Idetection_response)
 async def trigger_detection(body: Itrigger_detection):
-    # construct the argument parse and parse the arguments
-
-    # ap = argparse.ArgumentParser()
-    # ap.add_argument("-r", "--picamera", type=int, default=-1,
-    #                 help="whether or not the Raspberry Pi camera should be used")
-    # args = vars(ap.parse_args())
-
     # initialize dlib's face detector (HOG-based) and
     # using default detector from dlib
     print("[INFO] major face detector...")
@@ -80,9 +71,8 @@ async def trigger_detection(body: Itrigger_detection):
     # initialize the video stream and allow the camera sensor to warm up
     print("[INFO] camera sensor warming up...")
 
-    vs = VideoStream(usePiCamera=usePiCamera,resolution=(960,720)).start()
+    vs = VideoStream(usePiCamera=usePiCamera, resolution=(960, 720)).start()
     time.sleep(2.0)
-    no_face_count = 0
 
     best_frame = None
     best_frame_reduced = None
@@ -92,14 +82,6 @@ async def trigger_detection(body: Itrigger_detection):
     best_frame_top = -1
     best_frame_left = -1
     best_frame_size = -1
-
-    # 500 frame take 13221 ms
-    # 400 frame take 11769 ms
-    # 300 frame take 9858 ms
-    # 200 frame take 8020 ms
-    # 100 frame take 6421 ms
-    # 50 frame take 5555 ms
-    # about 1500 ms per 100 frames
 
     # loop frame by frame from video stream
     for _ in range(0, 50):
@@ -131,7 +113,6 @@ async def trigger_detection(body: Itrigger_detection):
                 best_frame_top = det.top()
                 best_frame_left = det.left()
                 best_frame_size = size
-
         else:
             print("Face Not Found")
 
