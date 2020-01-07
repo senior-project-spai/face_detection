@@ -11,7 +11,7 @@ import cv2
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-usePiCamera = False
+usePiCamera = True
 
 app = FastAPI()
 
@@ -80,7 +80,7 @@ async def trigger_detection(body: Itrigger_detection):
     # initialize the video stream and allow the camera sensor to warm up
     print("[INFO] camera sensor warming up...")
 
-    vs = VideoStream(usePiCamera=usePiCamera).start()
+    vs = VideoStream(usePiCamera=usePiCamera,resolution=(960,720)).start()
     time.sleep(2.0)
     no_face_count = 0
 
@@ -102,7 +102,7 @@ async def trigger_detection(body: Itrigger_detection):
     # about 1500 ms per 100 frames
 
     # loop frame by frame from video stream
-    for _ in range(0, 500):
+    for _ in range(0, 50):
         # grab the frame from the threaded video stream,
         # resize it to maximum width of 400 pixels
         frame = vs.read()
