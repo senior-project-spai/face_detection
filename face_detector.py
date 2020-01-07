@@ -10,8 +10,9 @@ import dlib
 import cv2
 from fastapi import FastAPI
 from pydantic import BaseModel
-
-usePiCamera = True
+import requests
+import json
+usePiCamera = False
 
 app = FastAPI()
 
@@ -59,6 +60,24 @@ def get_biggest_face(dets, scores, idx):
             biggest_det_score = scores[i]
             biggest_det_det = d
     return biggest_det_det, biggest_det_score, biggest_det_idx, biggest_det_size
+
+
+def uploadS3(frame):
+    # Uploading to S3
+    print("Uploading Frame to S3")
+
+    data = {
+        'time': int(time.time()),
+        'branch_id': 123456,
+        'camera_id': 123456,
+        'picture': frame,
+        'pictureName': 'Best-test-123456.jpg',
+    }
+
+    response = requests.post(
+        "https://image-to-s3-spai.apps.spai.ml/_api/image", data=data)
+
+    print(json.loads(response.text))
 
 
 @app.post("/detection", response_model=Idetection_response)
@@ -119,11 +138,15 @@ async def trigger_detection(body: Itrigger_detection):
     # Save Best frame
     cv2.imwrite("Best.jpg", best_frame)
     cv2.imwrite("Best_reduced.jpg", best_frame_reduced)
+    _, best_frame_encoded = cv2.imencode('.jpg', best_frame)
     print("Best Frame Left: {} Top: {} Right: {} Bottom: {} Score:{} Size:{}".format(
         best_frame_left, best_frame_top, best_frame_right, best_frame_buttom, max_confidence, best_frame_size))
 
     # Cleanup
     vs.stop()
+
+    uploadS3(best_frame_encoded)
+
     return {
         "customerId": body.customerId,
         "transactionId": body.transactionId,
