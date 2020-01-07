@@ -24,8 +24,8 @@ class Itrigger_detection(BaseModel):
 
 
 class Idetection_response(BaseModel):
-    customerId: str 
-    transactionId: str 
+    customerId: str
+    transactionId: str
     confidence: float
     buttom: float
     right: float
@@ -81,7 +81,7 @@ async def trigger_detection(body: Itrigger_detection):
     print("[INFO] camera sensor warming up...")
 
     vs = VideoStream(usePiCamera=usePiCamera).start()
-    time.sleep(1.0)
+    time.sleep(2.0)
     no_face_count = 0
 
     best_frame = None
@@ -93,16 +93,22 @@ async def trigger_detection(body: Itrigger_detection):
     best_frame_left = -1
     best_frame_size = -1
 
+    # 500 frame take 13221 ms
+    # 400 frame take 11769 ms
+    # 300 frame take 9858 ms
+    # 200 frame take 8020 ms
+    # 100 frame take 6421 ms
+    # 50 frame take 5555 ms
+    # about 1500 ms per 100 frames
+
     # loop frame by frame from video stream
-    for _ in range(0, 200):
+    for _ in range(0, 500):
         # grab the frame from the threaded video stream,
         # resize it to maximum width of 400 pixels
         frame = vs.read()
         raw_frame = frame
         frame = imutils.resize(frame, width=400)
         raw_frame_reduced = frame
-        # Convert to grayscale (for performance purpose i think)
-        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         h, w = get_height_frame(frame), get_width_frame(frame)
 
@@ -112,9 +118,6 @@ async def trigger_detection(body: Itrigger_detection):
 
         # det == -1 means not found face in picture
         if det != -1:
-            # no_face_count = 0
-            # font = cv2.FONT_HERSHEY_DUPLEX
-            # text_showed = "{} {:0.2f} {:0.2f}".format(idx, score, size)
             print("Left: {} Top: {} Right: {} Bottom: {} IDX:{} Score:{} Size:{}".format(
                 det.left(), det.top(), det.right(), det.bottom(), idx, score, size))
 
@@ -129,46 +132,17 @@ async def trigger_detection(body: Itrigger_detection):
                 best_frame_left = det.left()
                 best_frame_size = size
 
-            # cv2.rectangle(frame, (det.left(), det.top()),
-            #               (det.right(), det.bottom()), (0, 0, 255), 2)
-            # cv2.putText(frame, text_showed, (det.left() + 6, det.bottom() - 6),
-            #             font, 0.5, (255, 255, 255), 1)
-        # else:
-            # no_face_count = no_face_count+1
-            # print("Face Not Found Count={}".format(no_face_count))
+        else:
+            print("Face Not Found")
 
-        # this if scope is to call api that next frame should be new customer
-        # if no_face_count == 15:
-            # TODO: Create function to tell that its new client coming to store
-            # print('New Client')
-
-        # show the frame
-        # cv2.imshow("Frame", frame)
-        # key = cv2.waitKey(1) & 0xFF
-
-        # if the `q` key was pressed, break from the loop
-        # if key == ord("q"):
-        #     print("Exit")
-        #     break
-
-    # Show Best frame
+    # Save Best frame
     cv2.imwrite("Best.jpg", best_frame)
     cv2.imwrite("Best_reduced.jpg", best_frame_reduced)
     print("Best Frame Left: {} Top: {} Right: {} Bottom: {} Score:{} Size:{}".format(
         best_frame_left, best_frame_top, best_frame_right, best_frame_buttom, max_confidence, best_frame_size))
-    # font = cv2.FONT_HERSHEY_DUPLEX
-    # text_showed = "{:0.2f} {:0.2f}".format(max_confidence, best_frame_size)
-    # cv2.rectangle(best_frame, (best_frame_left, best_frame_top),
-    #               (best_frame_right, best_frame_buttom), (0, 0, 255), 2)
-    # cv2.putText(best_frame, text_showed, (best_frame_left + 6, best_frame_buttom - 6),
-    #             font, 0.5, (255, 255, 255), 1)
-
-    # cv2.imshow("Best Frame", best_frame)
 
     # Cleanup
-    # cv2.destroyAllWindows()
     vs.stop()
-    time.sleep(2)
     return {
         "customerId": body.customerId,
         "transactionId": body.transactionId,
