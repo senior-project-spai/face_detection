@@ -87,7 +87,7 @@ async def trigger_detection(item: Itrigger_detection):
         # resize it to maximum width of 400 pixels
         frame = vs.read()
         frame = imutils.resize(frame, width=400)
-        raw_frame = frame
+        # raw_frame = frame
         # Convert to grayscale (for performance purpose i think)
         # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -107,7 +107,7 @@ async def trigger_detection(item: Itrigger_detection):
 
             if score > max_confidence:
                 print("BEST!!!!!!!!!!!!!")
-                best_frame = raw_frame
+                best_frame = frame
                 max_confidence = score
                 best_frame_buttom = det.bottom()
                 best_frame_right = det.right()
@@ -115,10 +115,10 @@ async def trigger_detection(item: Itrigger_detection):
                 best_frame_left = det.left()
                 best_frame_size = size
 
-            cv2.rectangle(frame, (det.left(), det.top()),
-                          (det.right(), det.bottom()), (0, 0, 255), 2)
-            cv2.putText(frame, text_showed, (det.left() + 6, det.bottom() - 6),
-                        font, 0.5, (255, 255, 255), 1)
+            # cv2.rectangle(frame, (det.left(), det.top()),
+            #               (det.right(), det.bottom()), (0, 0, 255), 2)
+            # cv2.putText(frame, text_showed, (det.left() + 6, det.bottom() - 6),
+            #             font, 0.5, (255, 255, 255), 1)
         else:
             no_face_count = no_face_count+1
             print("Face Not Found Count={}".format(no_face_count))
