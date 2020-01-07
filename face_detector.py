@@ -70,7 +70,7 @@ def uploadS3(frame):
         'time': int(time.time()),
         'branch_id': 123456,
         'camera_id': 123456,
-        'picture': frame,
+        'picture': frame.tostring(),
         'pictureName': 'Best-test-123456.jpg',
     }
 
