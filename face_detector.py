@@ -3,10 +3,24 @@ from imutils.video import VideoStream
 from imutils import face_utils
 import datetime
 import argparse
+import os
 import imutils
 import time
 import dlib
 import cv2
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+usePiCamera = False
+
+app = FastAPI()
+
+
+class Itrigger_detection(BaseModel):
+    name: str = None
+    description: str = None
+    price: float = None
+    tax: float = None
 
 
 def get_width_frame(frame):
@@ -38,12 +52,14 @@ def get_biggest_face(dets, scores, idx):
     return biggest_det_det, biggest_det_score, biggest_det_idx, biggest_det_size
 
 
-if __name__ == "__main__":
+@app.post("/detection")
+async def trigger_detection(item: Itrigger_detection):
     # construct the argument parse and parse the arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-r", "--picamera", type=int, default=-1,
-                    help="whether or not the Raspberry Pi camera should be used")
-    args = vars(ap.parse_args())
+
+    # ap = argparse.ArgumentParser()
+    # ap.add_argument("-r", "--picamera", type=int, default=-1,
+    #                 help="whether or not the Raspberry Pi camera should be used")
+    # args = vars(ap.parse_args())
 
     # initialize dlib's face detector (HOG-based) and
     # using default detector from dlib
@@ -52,18 +68,26 @@ if __name__ == "__main__":
 
     # initialize the video stream and allow the camera sensor to warm up
     print("[INFO] camera sensor warming up...")
-    vs = VideoStream(usePiCamera=args["picamera"] > 0).start()
-    time.sleep(2.0)
 
+    vs = VideoStream(usePiCamera=usePiCamera).start()
+    time.sleep(2.0)
     no_face_count = 0
 
+    best_frame = None
+    max_confidence = -1
+    best_frame_buttom = -1
+    best_frame_right = -1
+    best_frame_top = -1
+    best_frame_left = -1
+    best_frame_size = -1
+
     # loop frame by frame from video stream
-    while True:
+    for _ in range(0, 100):
         # grab the frame from the threaded video stream,
         # resize it to maximum width of 400 pixels
         frame = vs.read()
         frame = imutils.resize(frame, width=400)
-
+        raw_frame = frame
         # Convert to grayscale (for performance purpose i think)
         # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -80,6 +104,17 @@ if __name__ == "__main__":
             text_showed = "{} {:0.2f} {:0.2f}".format(idx, score, size)
             print("Left: {} Top: {} Right: {} Bottom: {} IDX:{} Score:{} Size:{}".format(
                 det.left(), det.top(), det.right(), det.bottom(), idx, score, size))
+
+            if score > max_confidence:
+                print("BEST!!!!!!!!!!!!!")
+                best_frame = raw_frame
+                max_confidence = score
+                best_frame_buttom = det.bottom()
+                best_frame_right = det.right()
+                best_frame_top = det.top()
+                best_frame_left = det.left()
+                best_frame_size = size
+
             cv2.rectangle(frame, (det.left(), det.top()),
                           (det.right(), det.bottom()), (0, 0, 255), 2)
             cv2.putText(frame, text_showed, (det.left() + 6, det.bottom() - 6),
@@ -92,16 +127,29 @@ if __name__ == "__main__":
         if no_face_count == 15:
             # TODO: Create function to tell that its new client coming to store
             print('New Client')
-        
+
         # show the frame
         cv2.imshow("Frame", frame)
-        key = cv2.waitKey(1) & 0xFF
+        # key = cv2.waitKey(1) & 0xFF
 
         # if the `q` key was pressed, break from the loop
-        if key == ord("q"):
-            print("Exit")
-            break
+        # if key == ord("q"):
+        #     print("Exit")
+        #     break
+
+    # Show Best frame
+    cv2.imwrite("Best.jpg", best_frame)
+
+    # font = cv2.FONT_HERSHEY_DUPLEX
+    # text_showed = "{:0.2f} {:0.2f}".format(max_confidence, best_frame_size)
+    # cv2.rectangle(best_frame, (best_frame_left, best_frame_top),
+    #               (best_frame_right, best_frame_buttom), (0, 0, 255), 2)
+    # cv2.putText(best_frame, text_showed, (best_frame_left + 6, best_frame_buttom - 6),
+    #             font, 0.5, (255, 255, 255), 1)
+    # cv2.imshow("Best Frame", best_frame)
 
     # Cleanup
     cv2.destroyAllWindows()
     vs.stop()
+    time.sleep(2)
+    return {'done': True}
