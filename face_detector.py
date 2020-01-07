@@ -17,13 +17,15 @@ app = FastAPI()
 
 
 class Itrigger_detection(BaseModel):
-    name: str = None
-    description: str = None
-    price: float = None
-    tax: float = None
+    customerId: str = None
+    transactionId: str = None
+    # price: float = None
+    # tax: float = None
 
 
 class Idetection_response(BaseModel):
+    customerId: str 
+    transactionId: str 
     confidence: float
     buttom: float
     right: float
@@ -62,7 +64,7 @@ def get_biggest_face(dets, scores, idx):
 
 
 @app.post("/detection", response_model=Idetection_response)
-async def trigger_detection(item: Itrigger_detection):
+async def trigger_detection(body: Itrigger_detection):
     # construct the argument parse and parse the arguments
 
     # ap = argparse.ArgumentParser()
@@ -141,7 +143,7 @@ async def trigger_detection(item: Itrigger_detection):
             # print('New Client')
 
         # show the frame
-        cv2.imshow("Frame", frame)
+        # cv2.imshow("Frame", frame)
         # key = cv2.waitKey(1) & 0xFF
 
         # if the `q` key was pressed, break from the loop
@@ -168,6 +170,8 @@ async def trigger_detection(item: Itrigger_detection):
     vs.stop()
     time.sleep(2)
     return {
+        "customerId": body.customerId,
+        "transactionId": body.transactionId,
         "confidence": max_confidence,
         "buttom": best_frame_buttom,
         "right": best_frame_right,
