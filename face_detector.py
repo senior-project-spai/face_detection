@@ -9,6 +9,7 @@ import time
 import dlib
 import cv2
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
 import json
@@ -28,11 +29,17 @@ best_frame_left = -1
 best_frame_size = -1
 
 app = FastAPI()
-
-
+# app.add_middleware(CORSMiddleware, allow_origins=['*'])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 class Itrigger_detection(BaseModel):
     customerId: str = None
-    transactionId: str = None
+    transactionId: str = "test"
 
 
 class Idetection_response(BaseModel):
