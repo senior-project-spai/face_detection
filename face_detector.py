@@ -157,6 +157,24 @@ def detections(detector, frame):
 
 @app.post("/detection", response_model=Idetection_response)
 async def trigger_detection(body: Itrigger_detection):
+    global best_frame
+    global best_frame_reduced
+    global max_confidence
+    global best_frame_buttom
+    global best_frame_right
+    global best_frame_top
+    global best_frame_left
+    global best_frame_size
+
+    best_frame = None
+    best_frame_reduced = None
+    max_confidence = -1
+    best_frame_buttom = -1
+    best_frame_right = -1
+    best_frame_top = -1
+    best_frame_left = -1
+    best_frame_size = -1
+
     # initialize dlib's face detector (HOG-based) and
     # using default detector from dlib
     print("[INFO] major face detector...")
