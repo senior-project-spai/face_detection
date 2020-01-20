@@ -13,6 +13,7 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests
 import json
+
 usePiCamera = False
 
 BRANCH_ID = 123456
@@ -27,6 +28,7 @@ best_frame_right = -1
 best_frame_top = -1
 best_frame_left = -1
 best_frame_size = -1
+pictureName = ""
 
 app = FastAPI()
 # app.add_middleware(CORSMiddleware, allow_origins=['*'])
@@ -37,14 +39,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-class Itrigger_detection(BaseModel):
-    customerId: str = None
-    transactionId: str = "test"
 
 
 class Idetection_response(BaseModel):
-    customerId: str
-    transactionId: str
+    face_image_id: str
+    photo_uri: str
     confidence: float
     buttom: float
     right: float
@@ -82,24 +81,29 @@ def get_biggest_face(dets, scores, idx):
     return biggest_det_det, biggest_det_score, biggest_det_idx, biggest_det_size
 
 
-def uploadS3(frame):
+def upload_to_face_input_api(frame):
     # Uploading to S3
     print("Uploading Frame to S3")
     currentTime = int(time.time())
-    pictureName = "FaceDetector"+str(BRANCH_ID)+"_"+str(CAMERA_ID)+"_"+str(currentTime)+".jpg"
+    global pictureName
+    pictureName = "FaceDetector_" + \
+        str(BRANCH_ID)+"_"+str(CAMERA_ID)+"_"+str(currentTime)+".jpg"
     data = {
         'time': currentTime,
         'branch_id': BRANCH_ID,
         'camera_id': CAMERA_ID,
-        # 'picture': frame.tostring(),
-        'pictureName': pictureName,
+        'image_name': pictureName,
+        "position_bottom": best_frame_buttom,
+        "position_right": best_frame_right,
+        "position_top": best_frame_top,
+        "position_left": best_frame_left,
     }
-    file = {'picture': (pictureName, frame.tostring(),
-                        'image/jpeg', {'Expires': '0'})}
+    file = {'image': (pictureName, frame.tostring(),
+                      'image/jpeg', {'Expires': '0'})}
     response = requests.post(
-        "https://image-to-s3-spai.apps.spai.ml/_api/image", files=file, data=data)
+        "https://face-image-input-api-spai.apps.spai.ml/_api/face", files=file, data=data)
 
-    print(json.loads(response.text))
+    return json.loads(response.text)
 
 
 def detection(detector, frame):
@@ -155,8 +159,8 @@ def detections(detector, frame):
         print("Face Not Found")
 
 
-@app.post("/detection", response_model=Idetection_response)
-async def trigger_detection(body: Itrigger_detection):
+@app.get("/detection", response_model=Idetection_response)
+async def trigger_detection():
     global best_frame
     global best_frame_reduced
     global max_confidence
@@ -210,15 +214,14 @@ async def trigger_detection(body: Itrigger_detection):
     # Cleanup
     vs.stop()
 
-    uploadS3(best_frame_encoded)
-
+    response = upload_to_face_input_api(best_frame_encoded)
     return {
-        "customerId": body.customerId,
-        "transactionId": body.transactionId,
         "confidence": max_confidence,
         "buttom": best_frame_buttom,
         "right": best_frame_right,
         "top": best_frame_top,
         "left": best_frame_left,
         "size": best_frame_size,
+        'face_image_id': response['face_image_id'],
+        'photo_uri': requests.get(url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
     }
