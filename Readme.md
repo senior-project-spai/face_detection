@@ -16,7 +16,7 @@ set usePiCamera to False in code
 ```
 ## Run in development
 ```
-uvicorn face_detector:app --reload --host 0.0.0.0
+uvicorn face_detector:app --reload --host 0.0.0.0 --port 8002
 ```
 ## Run in production
 ```
