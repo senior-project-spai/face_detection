@@ -192,11 +192,12 @@ async def trigger_detection():
 
     # loop frame by frame from video stream
     i=0
-    while best_frame is None:
+    while True:
         # grab the frame from the threaded video stream,
         # resize it to maximum width of 400 pixels
         if i >=50 and best_frame is not None:
             break
+        print(str(i)+": ",end="")
         frame = vs.read()
         detections(detector, frame)
         i+=1
