@@ -1,6 +1,5 @@
 # import the necessary packages
 from imutils.video import VideoStream
-from imutils import face_utils
 import datetime
 import argparse
 import os
@@ -82,8 +81,8 @@ def get_biggest_face(dets, scores, idx):
 
 
 def upload_to_face_input_api(frame):
-    # Uploading to S3
-    print("Uploading Frame to S3")
+    # Uploading to face-image-input-api
+    print("Upload to face-image-input-api")
     currentTime = int(time.time())
     global pictureName
     pictureName = "FaceDetector_" + \
@@ -201,10 +200,14 @@ async def trigger_detection():
         frame = vs.read()
         detections(detector, frame)
         i+=1
-    # Save Best frame
-    cv2.imwrite("Best.jpg", best_frame)
-    cv2.imwrite("Best_reduced.jpg", best_frame_reduced)
-    _, best_frame_encoded = cv2.imencode('.jpg', best_frame)
+    
+    # Save Best frame with 100 quality
+    encode_params = [cv2.IMWRITE_JPEG_QUALITY, 100]
+    cv2.imwrite("Best.jpg", best_frame, encode_params)
+    cv2.imwrite("Best_reduced.jpg", best_frame_reduced, encode_params)
+    _, best_frame_encoded = cv2.imencode('.jpg', best_frame, encode_params)
+
+    # Detection on original frame again
     det = detection(detector, best_frame)
     max_confidence = det['score']
     best_frame_buttom = det['bottom']
