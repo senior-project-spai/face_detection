@@ -16,8 +16,8 @@ import json
 
 usePiCamera = False
 
-BRANCH_ID = 123456
-CAMERA_ID = 123456
+BRANCH_ID = 0
+CAMERA_ID = 0
 
 
 best_frame = None
@@ -86,6 +86,8 @@ def upload_to_face_input_api(frame):
     print("Uploading Frame to S3")
     currentTime = int(time.time())
     global pictureName
+    global BRANCH_ID
+    global CAMERA_ID
     pictureName = "FaceDetector_" + \
         str(BRANCH_ID)+"_"+str(CAMERA_ID)+"_"+str(currentTime)+".jpg"
     data = {
