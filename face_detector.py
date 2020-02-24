@@ -84,7 +84,7 @@ def get_biggest_face(dets, scores, idx):
 def upload_to_face_input_api(frame):
     # Uploading to S3
     print("Uploading Frame to S3")
-    currentTime = int(time.time())
+    currentTime = int(round(time.time() * 1000)) / 1000
     global pictureName
     global BRANCH_ID
     global CAMERA_ID
