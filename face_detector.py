@@ -19,7 +19,7 @@ usePiCamera = False
 BRANCH_ID = 0
 CAMERA_ID = 0
 
-
+vs = None
 best_frame = None
 best_frame_reduced = None
 max_confidence = -1
@@ -50,6 +50,15 @@ class Idetection_response(BaseModel):
     top: float
     left: float
     size: float
+
+
+@app.on_event("startup")
+def startup_event():
+    global vs
+    # initialize the video stream and allow the camera sensor to warm up
+    print("[INFO] camera sensor warming up...")
+    vs = VideoStream(usePiCamera=usePiCamera, resolution=(960, 720)).start()
+    time.sleep(2.0)
 
 
 def get_width_frame(frame):
@@ -147,7 +156,7 @@ def detections(detector, frame):
     det = detection(detector, frame)
     if det != {}:
         if det['score'] > max_confidence:
-            print("BEST!!!!!!!!!!!!!")
+            print("[INFO] BEST FRAME")
             best_frame = raw_frame
             best_frame_reduced = raw_frame_reduced
 
@@ -186,23 +195,18 @@ async def trigger_detection():
     print("[INFO] major face detector...")
     detector = dlib.get_frontal_face_detector()
 
-    # initialize the video stream and allow the camera sensor to warm up
-    print("[INFO] camera sensor warming up...")
-
-    vs = VideoStream(usePiCamera=usePiCamera, resolution=(960, 720)).start()
-    time.sleep(2.0)
-
     # loop frame by frame from video stream
-    i=0
+    i = 0
     while True:
         # grab the frame from the threaded video stream,
         # resize it to maximum width of 400 pixels
-        if i >=50 and best_frame is not None:
+        if i >= 50 and best_frame is not None:
             break
-        print(str(i)+": ",end="")
+        print("[INFO] "+str(i)+": ", end="")
         frame = vs.read()
         detections(detector, frame)
-        i+=1
+        i += 1
+
     # Save Best frame
     cv2.imwrite("Best.jpg", best_frame)
     cv2.imwrite("Best_reduced.jpg", best_frame_reduced)
@@ -214,11 +218,12 @@ async def trigger_detection():
     best_frame_top = det['top']
     best_frame_left = det['left']
     best_frame_size = det['size']
-    print("Best Frame Left: {} Top: {} Right: {} Bottom: {} Score:{} Size:{}".format(
+    print("[INFO] Best Frame Left: {} Top: {} Right: {} Bottom: {} Score:{} Size:{}".format(
         best_frame_left, best_frame_top, best_frame_right, best_frame_buttom, max_confidence, best_frame_size))
 
     # Cleanup
     vs.stop()
+    cv2.destroyAllWindows()
 
     response = upload_to_face_input_api(best_frame_encoded)
     return {
