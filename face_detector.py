@@ -153,16 +153,11 @@ def detections(detector, frame):
     global best_frame_left
     global best_frame_size
 
-    raw_frame = frame
-    frame = imutils.resize(frame, width=400)
-    raw_frame_reduced = frame
     det = detection(detector, frame)
     if det != {}:
         if det['score'] > max_confidence:
             print("[INFO] BEST FRAME")
-            best_frame = raw_frame
-            best_frame_reduced = raw_frame_reduced
-
+            best_frame = frame
             max_confidence = det['score']
             best_frame_buttom = det['bottom']
             best_frame_right = det['right']
@@ -201,18 +196,17 @@ async def trigger_detection():
     # loop frame by frame from video stream
     i = 0
     while True:
-        # grab the frame from the threaded video stream,
-        # resize it to maximum width of 400 pixels
+        # grab the frame from the threaded video stream
         if i >= 50 and best_frame is not None:
             break
         print("[INFO] "+str(i)+": ", end="")
         frame = vs.read()
+        frame = imutils.resize(frame, width=400)
         detections(detector, frame)
         i += 1
 
     # Save Best frame
     cv2.imwrite("Best.jpg", best_frame)
-    cv2.imwrite("Best_reduced.jpg", best_frame_reduced)
     _, best_frame_encoded = cv2.imencode('.jpg', best_frame)
     det = detection(detector, best_frame)
     max_confidence = det['score']
