@@ -42,8 +42,8 @@ app.add_middleware(
 
 
 class Idetection_response(BaseModel):
-    face_image_id: str
-    photo_uri: str
+    # face_image_id: str
+    # photo_uri: str
     confidence: float
     buttom: float
     right: float
@@ -60,6 +60,9 @@ def startup_event():
     vs = VideoStream(usePiCamera=usePiCamera, resolution=(960, 720)).start()
     time.sleep(2.0)
 
+@app.on_event("shutdown")
+def shutdown_event():
+    vs.stop()
 
 def get_width_frame(frame):
     (_, w) = frame.shape[:2]
@@ -221,11 +224,8 @@ async def trigger_detection():
     print("[INFO] Best Frame Left: {} Top: {} Right: {} Bottom: {} Score:{} Size:{}".format(
         best_frame_left, best_frame_top, best_frame_right, best_frame_buttom, max_confidence, best_frame_size))
 
-    # Cleanup
-    vs.stop()
-    cv2.destroyAllWindows()
 
-    response = upload_to_face_input_api(best_frame_encoded)
+    # response = upload_to_face_input_api(best_frame_encoded)
     return {
         "confidence": max_confidence,
         "buttom": best_frame_buttom,
@@ -233,6 +233,6 @@ async def trigger_detection():
         "top": best_frame_top,
         "left": best_frame_left,
         "size": best_frame_size,
-        'face_image_id': response['face_image_id'],
-        'photo_uri': requests.get(url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
+        # 'face_image_id': response['face_image_id'],
+        # 'photo_uri': requests.get(url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
     }
