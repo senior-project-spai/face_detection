@@ -230,7 +230,7 @@ async def trigger_detection():
                 url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
         except:
             continue
-
+        break
     return {
         "confidence": max_confidence,
         "buttom": best_frame_buttom,
