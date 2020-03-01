@@ -60,9 +60,11 @@ def startup_event():
     vs = VideoStream(usePiCamera=usePiCamera, resolution=(960, 720)).start()
     time.sleep(2.0)
 
+
 @app.on_event("shutdown")
 def shutdown_event():
     vs.stop()
+
 
 def get_width_frame(frame):
     (_, w) = frame.shape[:2]
@@ -218,8 +220,17 @@ async def trigger_detection():
     print("[INFO] Best Frame Left: {} Top: {} Right: {} Bottom: {} Score:{} Size:{}".format(
         best_frame_left, best_frame_top, best_frame_right, best_frame_buttom, max_confidence, best_frame_size))
 
-
     response = upload_to_face_input_api(best_frame_encoded)
+
+    photo_uri = None
+    while True:
+        try:
+            print('[INFO] Retrieve photo from S3 Server')
+            photo_uri = requests.get(
+                url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
+        except:
+            continue
+
     return {
         "confidence": max_confidence,
         "buttom": best_frame_buttom,
@@ -228,5 +239,5 @@ async def trigger_detection():
         "left": best_frame_left,
         "size": best_frame_size,
         'face_image_id': response['face_image_id'],
-        'photo_uri': requests.get(url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
+        'photo_uri': photo_uri
     }
