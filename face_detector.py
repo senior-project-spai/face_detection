@@ -227,7 +227,7 @@ async def trigger_detection():
         try:
             print('[INFO] Retrieve photo from S3 Server')
             photo_uri = requests.get(
-                url='https://get-photo-from-s3-service.spai.svc/_api/photo/'+pictureName).json()['photo_data_uri']
+                url='https://get-photo-from-s3-spai.apps.spai.ml/_api/photo/'+pictureName).json()['photo_data_uri']
         except:
             continue
         break
